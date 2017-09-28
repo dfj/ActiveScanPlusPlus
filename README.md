@@ -1,4 +1,4 @@
-ActiveScan++
+pctiveScan++
 ==================
 
 ActiveScan++ extends Burp Suite's active and passive scanning capabilities. Designed to add minimal network overhead, it identifies application behaviour that may be of interest to advanced testers:
@@ -12,7 +12,8 @@ It also adds checks for the following issues:
 
   - Blind code injection via expression language, Ruby's open() and Perl's open()
   - CVE-2014-6271/CVE-2014-6278 'shellshock' and CVE-2015-2080
-  
+  - CVE-2017-5638/CVE-2017-9805 Struts2 RCE vulnerabilities
+
 #### Requirements:
 Burp Suite Professional (version 1.6 or later)
 Jython 2.5 or later standalone: http://www.jython.org/downloads.html
@@ -34,6 +35,9 @@ To invoke these checks, just run a normal active scan.
 The host header checks tamper with the host header, which may result in requests being routed to different applications on the same host. Exercise caution when running this scanner against applications in a shared hosting environment.
     
 #### Changelog:
+**1.0.15 20170927**
+  - Detect Struts2 XML deserialization RCE - CVE-2017-9805 / S2-052
+
 **1.0.14 20170309**
   - Detect the latest Struts2 RCE - CVE-2017-5638 / S2-045
 
