@@ -108,8 +108,6 @@ class PerRequestScans(IScannerCheck):
         x = random.randint(999, 9999)
         y = random.randint(999, 9999)
         (ignore, req) = setHeader(basePair.getRequest(), 'Content-Type', "${#context[\"com.opensymphony.xwork2.dispatcher.HttpServletResponse\"].addHeader(\"X-Ack\","+str(x)+"*"+str(y)+")}.multipart/form-data", True)
-        print("TIM")
-        print(safe_bytes_to_string(req))
         attack = callbacks.makeHttpRequest(basePair.getHttpService(), req)
 
         if str(x*y) in '\n'.join(helpers.analyzeResponse(attack.getResponse()).getHeaders()):
