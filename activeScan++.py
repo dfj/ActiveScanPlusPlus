@@ -247,14 +247,14 @@ AAoAAQACABYAEAAJ</byte-array>
         attack = callbacks.makeHttpRequest(basePair.getHttpService(), req) # send out the request 
         response_time = time.time()
         time_diff = int(response_time - request_time)
-        print("TIME DIFF")
-        print(str(time_diff))
+        #print("TIME DIFF")
+        #print(str(time_diff))
 
         # The above will block until getting 500 back, this is annoying
         # we need to get the time diff for request and response, 
         # if the time diff is > 10, then it is vuln.... 
 
-        print(request)
+        #print(request)
         status_code = helpers.analyzeResponse(attack.getResponse()).getStatusCode()
 
         if time_diff >= 10:
@@ -262,7 +262,7 @@ AAoAAQACABYAEAAJ</byte-array>
             return [CustomScanIssue(basePair.getHttpService(), helpers.analyzeRequest(basePair).getUrl(),
                 [attack],
                 'Struts2 XML deserialization RCE',
-                "The application appears to be timeout",
+                "The application appears to be timeout (10 secs)",
                 'Firm', 'High')]
         # print ("NOT VULN")
         return [] # not vuln, no timeout
